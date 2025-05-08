@@ -442,8 +442,6 @@ async def handler(event):
 
         signal_data = parse_entry_signal(message)
         if signal_data:
-            # await place_simple_market_order(signal_data)
-
             global signal_id_mrpip
 
             order_data = {
@@ -466,9 +464,8 @@ async def handler(event):
 
         signal_data = parse_tp_sl_message(message)
         if signal_data:
-
             global signal_id_mrpip
-            
+
             order_data = {
                 "tps": signal_data['tps'],         # Ej: "CRASH 1000 INDEX"
                 "sl": signal_data['sl'],            # "BUY" o "SELL"
