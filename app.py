@@ -156,11 +156,13 @@ def parse_tp_sl_message(text):
 def is_forex_premium_signal(text):
     """
     Valida si un texto contiene una señal válida para los activos permitidos:
-    XAU, GOLD, US30, NASDAQ, USTECH, BTCUSD, US100
+    US30, GOLD, BTC, XAU
 
-    Acepta encabezado con o sin la palabra NOW:
-    - GOLD BUY NOW 3280
+    Acepta encabezado con o sin la palabra NOW y con palabras previas:
+    - GOLD SELL NOW 3280
+    - GUYS GOLD SELL NOW 3280
     - US30 SELL 41030
+    - BTC BUY NOW 67200
 
     Requiere al menos un TP y un SL.
     """
@@ -170,13 +172,12 @@ def is_forex_premium_signal(text):
 
     text = text.strip().upper()
 
-    # Lista de símbolos permitidos
-    allowed_symbols = {"XAU", "GOLD", "US30", "NASDAQ", "USTECH", "BTCUSD", "US100"}
+    # Símbolos válidos
+    allowed_symbols = {"US30", "GOLD", "BTC", "XAU"}
 
-    # Buscar encabezado de señal con o sin 'NOW'
-    # Ej: "US30 SELL 41030" o "GOLD BUY NOW 3280"
+    # Buscar encabezado flexible
     match = re.search(
-        r'\b([A-Z0-9]+)\s+(BUY|SELL)(?:\s+NOW)?\s+([\d\.]+(?:\s*/\s*[\d\.]+)?)',
+        r'(?:\b\w+\b\s+)*([A-Z0-9]+)\s+(BUY|SELL)(?:\s+NOW)?(?:\s+\w+)*\s+([\d\.]+(?:\s*/\s*[\d\.]+)?)',
         text
     )
 
@@ -190,7 +191,7 @@ def is_forex_premium_signal(text):
     # Validar SL
     has_sl = re.search(r'\bSL\s*[:=]?\s*([\d\.]+)', text, re.IGNORECASE)
 
-    # Validar TPs
+    # Validar al menos un TP
     tp_matches = re.findall(r'\bTP\d*\s*[:=]?\s*([\d\.]+)', text, re.IGNORECASE)
 
     return all([
@@ -200,49 +201,44 @@ def is_forex_premium_signal(text):
 
 def parse_forex_premium_signal(text):
     """
-    Parsea una señal del tipo US30 SELL 41030 o GOLD BUY NOW 3282/3280.
+    Parsea una señal del tipo GOLD SELL NOW 3412 o GUYS GOLD SELL NOW 3412.
+    Solo acepta los símbolos: US30, GOLD, BTC, XAU.
+
     Extrae:
-        - symbol (solo si está en la lista permitida)
-        - direction (BUY o SELL)
-        - entry (una o dos cifras)
-        - sl (float)
-        - tps (list de float)
-    Retorna un diccionario o None si el texto no es válido.
+        - symbol
+        - direction
+        - entry
+        - sl
+        - tps
     """
     if not text or not isinstance(text, str):
         return None
 
     text = text.strip().upper()
 
-    # Lista blanca de símbolos aceptados
-    allowed_symbols = {"XAU", "GOLD", "US30", "NASDAQ", "USTEC", "BTCUSD", "US100"}
+    allowed_symbols = {"US30", "GOLD", "BTC", "XAU"}
 
-    # Encabezado: símbolo + BUY/SELL [+ NOW] + precio
-    header_match = re.search(
-        r'\b([A-Z0-9]+)\s+(BUY|SELL)(?:\s+NOW)?\s+([\d\.]+(?:\s*/\s*[\d\.]+)?)',
+    # Buscar encabezado flexible
+    match = re.search(
+        r'(?:\b\w+\b\s+)*([A-Z0-9]+)\s+(BUY|SELL)(?:\s+NOW)?(?:\s+\w+)*\s+([\d\.]+(?:\s*/\s*[\d\.]+)?)',
         text
     )
-
-    if not header_match:
+    if not match:
         return None
 
-    symbol = header_match.group(1).strip()
+    symbol = match.group(1).strip()
     if symbol not in allowed_symbols:
         return None
 
-    if symbol == "GOLD":
-        symbol = "XAUUSD"
+    direction = match.group(2).strip()
+    entry_raw = match.group(3).strip()
 
-    direction = header_match.group(2).strip()
-    entry_raw = header_match.group(3).strip()
-
-    # Procesar precios de entrada (una cifra o dos)
     try:
         entry_prices = [float(p.strip()) for p in entry_raw.split('/') if p.strip()]
     except ValueError:
         return None
 
-    # SL
+    # Buscar SL
     sl_match = re.search(r'\bSL\s*[:=]?\s*([\d\.]+)', text, re.IGNORECASE)
     if not sl_match:
         return None
@@ -251,7 +247,7 @@ def parse_forex_premium_signal(text):
     except ValueError:
         return None
 
-    # TPs
+    # Buscar TPs
     tp_matches = re.findall(r'\bTP\d*\s*[:=]?\s*([\d\.]+)', text, re.IGNORECASE)
     try:
         tps = [float(tp) for tp in tp_matches]
