@@ -584,5 +584,4 @@ async def run_all():
     await asyncio.gather(telegram_task, flask_task)
 
 if __name__ == "__main__":
-    client_telegram.start()
     asyncio.run(run_all())
