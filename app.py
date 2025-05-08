@@ -448,6 +448,9 @@ async def handler(event):
     sender_id = int(event.chat_id)
     message = event.message.message
 
+    print(f"sender: {sender_id}")
+    print(f"message: {message}")
+
     #CHANNEL_CRYPTO
     if sender_id in [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS] and is_entry_signal_mr_pip(message):
         header = "📡 Señal de Mr Pips Recibida con Punto de Entrada"
@@ -465,8 +468,8 @@ async def handler(event):
             order_data['signal_id'] = signal_id_mrpip
 
             send_order_to_mt5(order_data)
-            await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
             print(order_data)
+            await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
             return
         
     elif sender_id in [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS] and is_tp_sl_message_mr_pip(message):
@@ -486,8 +489,8 @@ async def handler(event):
                 order_data['signal_id'] = signal_id_mrpip
 
             send_order_to_mt5(order_data)
-            await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
             print(signal_data)
+            await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
             return
 
     elif sender_id in [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_FOREX] and is_forex_premium_signal(message):
@@ -505,8 +508,8 @@ async def handler(event):
                 "vendor": "Premiun Forex"
             }
             send_order_to_mt5(order_data)
-            await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
             print(signal_data)
+            await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
             return
         
     elif sender_id in [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_BTC] and is_enfoque_signal(message):
@@ -524,8 +527,8 @@ async def handler(event):
                 "vendor": "Enfoque BTC"
             }
             send_order_to_mt5(order_data)
-            await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
             print(signal_data)
+            await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
             return
         
     else:
@@ -542,7 +545,7 @@ async def handler(event):
 
 # === Ejecutar cliente ===
 def start_flask():
-    port = int(os.getenv("PORT", 5000))
+    port = int(os.getenv("PORT", 3000))
     print(f"🌐 Flask escuchando en puerto {port}")
     app.run(host="0.0.0.0", port=port)
 
@@ -556,11 +559,11 @@ def main():
 
 @app.route("/")
 def index():
-    return {"status": "ok", "message": "API activa desde Render"}
+    return {"status": "ok", "message": "API activa!"}
 
 @app.route("/ping")
 def ping():
-    return {"status": "ok", "message": "MT5 bot activo"}
+    return {"status": "ok", "message": "bot activo!"}
 
 @app.route("/mt5/mrpip/execute", methods=["GET"])
 def get_mrpip_signal():
