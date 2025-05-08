@@ -416,7 +416,7 @@ def format_signal_for_telegram(order_data):
     if direction and symbol:
         lines.append(f"📈 {direction} - `{symbol}`\n")
     elif vendor == "pipsltp":
-        lines.append(f"📈 {latest_signal_mrpip["symbol"]} - `{latest_signal_mrpip["side"]}`\n")
+        lines.append(f"📈 {latest_signal_mrpip['symbol']} - `{latest_signal_mrpip['side']}`\n")
 
     # lines.append(f"🎯 Entry: `{entry}`")
 
