@@ -1,0 +1,7 @@
+telethon
+python-telegram-bot
+asyncio
+dotenv
+python-binance
+flask
+gunicorn
