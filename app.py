@@ -6,6 +6,7 @@ import os
 import re
 import asyncio
 import time
+import threading
 from datetime import datetime, timedelta
 
 load_dotenv()
@@ -574,11 +575,16 @@ def get_btc_signal():
     return jsonify(signal)
 
 # === Ejecutar cliente ===
-def main():
-    print("🚀 Escuchando y reenviando señales...")
+def run_telegram():
     with client_telegram:
-        client_telegram.run_until_disconnected()
+        client_telegram.loop.run_until_complete(client_telegram.run_until_disconnected())
 
 if __name__ == "__main__":
-    main()
+    print("🚀 Escuchando y reenviando señales...")
+    # Iniciar Telethon en segundo plano
+    telegram_thread = threading.Thread(target=run_telegram)
+    telegram_thread.start()
 
+    # Iniciar Flask
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
