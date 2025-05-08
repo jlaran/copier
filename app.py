@@ -369,26 +369,26 @@ def parse_enfoque_signal(text):
 def send_order_to_mt5(order_data):
     global latest_signal_mrpip, latest_signal_mrpip_sltp, latest_signal_forexpremim, latest_signal_btc
 
-    broker = order_data.get("vendor", "").lower()
+    vendor = order_data.get("vendor", "").lower()
 
-    if broker == "pip":
+    if vendor == "pip":
         latest_signal_mrpip = order_data
-        print(f"📤 Señal para Deriv almacenada: {order_data['symbol']} [{order_data['side']}]")
+        print(f"📤 Señal de Mr Pips almacenada: {order_data['symbol']} [{order_data['side']}]")
     
-    if broker == "pipsltp":
+    if vendor == "pipsltp":
         latest_signal_mrpip_sltp = order_data
-        print(f"📤 Señal para Deriv almacenada: {order_data['symbol']} [{order_data['side']}]")
+        print(f"📤 Señal con SL y TPs de Mr Pips almacenada")
 
-    elif broker == "Premiun Forex":
+    elif vendor == "Premiun Forex":
         latest_signal_forexpremim = order_data
-        print(f"📤 Señal para Weltrade almacenada: {order_data['symbol']} [{order_data['side']}]")
+        print(f"📤 Señal de Forex Premium almacenada: {order_data['symbol']} [{order_data['side']}]")
 
-    elif broker == "Enfoque BTC":
+    elif vendor == "Enfoque BTC":
         latest_signal_btc = order_data
-        print(f"📤 Señal para Weltrade almacenada: {order_data['symbol']} [{order_data['side']}]")
+        print(f"📤 Señal de Enfoque BTC almacenada: {order_data['symbol']} [{order_data['side']}]")
 
     else:
-        print("❌ Broker desconocido en la señal:", broker)
+        print("❌ Vendor desconocido en la señal:", vendor)
 
 def format_signal_for_telegram(order_data):
     """
