@@ -5,3 +5,4 @@ dotenv
 python-binance
 flask
 gunicorn
+hypercorn

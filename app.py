@@ -6,7 +6,6 @@ import os
 import re
 import asyncio
 import time
-import threading
 from datetime import datetime, timedelta
 
 load_dotenv()
@@ -525,10 +524,6 @@ async def handler(event):
         print(f"❌ Error al enviar mensaje al canal: {e}")
 
 # === Ejecutar cliente ===
-def start_flask():
-    port = int(os.getenv("PORT", 5000))
-    print(f"🌐 Flask escuchando en puerto {port}")
-    app.run(host="0.0.0.0", port=port)
 
 @app.route("/")
 def index():
@@ -575,16 +570,19 @@ def get_btc_signal():
     return jsonify(signal)
 
 # === Ejecutar cliente ===
-def run_telegram():
-    with client_telegram:
-        client_telegram.loop.run_until_complete(client_telegram.run_until_disconnected())
+async def run_all():
+    telegram_task = asyncio.create_task(client_telegram.run_until_disconnected())
+
+    from hypercorn.asyncio import serve
+    from hypercorn.config import Config
+
+    config = Config()
+    config.bind = [f"0.0.0.0:{os.getenv('PORT', 5000)}"]
+
+    flask_task = asyncio.create_task(serve(app, config))
+
+    await asyncio.gather(telegram_task, flask_task)
 
 if __name__ == "__main__":
-    print("🚀 Escuchando y reenviando señales...")
-    # Iniciar Telethon en segundo plano
-    telegram_thread = threading.Thread(target=run_telegram)
-    telegram_thread.start()
-
-    # Iniciar Flask
-    port = int(os.getenv("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    client_telegram.start()
+    asyncio.run(run_all())
