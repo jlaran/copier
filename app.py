@@ -2,8 +2,6 @@ import uuid
 from flask import Flask, request, jsonify
 from telethon import TelegramClient, events
 from dotenv import load_dotenv
-from binance.client import Client
-from binance.exceptions import BinanceAPIException
 import os
 import re
 import asyncio
