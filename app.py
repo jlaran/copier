@@ -391,6 +391,7 @@ def send_order_to_mt5(order_data):
         print("❌ Vendor desconocido en la señal:", vendor)
 
 def format_signal_for_telegram(order_data):
+    global latest_signal_mrpip
     """
     Formatea una señal de trading para enviar como mensaje de Telegram (Markdown),
     soportando distintos formatos de `order_data`.
