@@ -431,12 +431,12 @@ def format_signal_for_telegram(order_data):
 
 @client_telegram.on(events.NewMessage(chats=WATCHED_CHANNELS))
 async def handler(event):
+    global signal_id_mrpip
     sender_id = int(event.chat_id)
     message = event.message.message
 
     #CHANNEL_CRYPTO
     if sender_id == TELEGRAM_CHANNEL_TARGET and is_entry_signal_mr_pip(message):
-        global signal_id_mrpip
         header = "📡 Señal de Mr Pips Recibida con Punto de Entrada"
 
         print(f"\n🪙 Señal de MR Pip detectada:\n{message}\n{'='*60}")
@@ -457,7 +457,6 @@ async def handler(event):
             return
         
     elif sender_id == TELEGRAM_CHANNEL_TARGET and is_tp_sl_message_mr_pip(message):
-        global signal_id_mrpip
         header = "📡 Señal de Mr Pips Recibida con SL y TP"
 
         print(f"\n🪙 Señal MR Pip detectada:\n{message}\n{'='*60}")
