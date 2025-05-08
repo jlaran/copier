@@ -532,7 +532,17 @@ async def handler(event):
             return
         
     else:
-        header = "⚠️ Se recibió un mensaje, pero no es una señal"
+        if sender_id  == TELEGRAM_CHANNEL_PIPS:
+            header = "⚠️ Se recibió un mensaje de Mr Pips, pero no es una señal"
+        elif sender_id == TELEGRAM_CHANNEL_FOREX:
+            header = "⚠️ Se recibió un mensaje de VIP Premium Forex, pero no es una señal"
+        elif sender_id == TELEGRAM_CHANNEL_BTC:
+            header = "⚠️ Se recibió un mensaje El Enfoque, pero no es una señal"
+        elif sender_id  == TELEGRAM_CHANNEL_TARGET:
+            header = "⚠️ Se recibió un mensaje del grupo The Billions, pero no es una señal"
+        else:
+            header = "⚠️ Se recibió un mensaje, pero no es de otro canal"
+        
         print(f"\n📭 Mensaje ignorado de canal {sender_id}.\n{'='*60}")
         
     # Enviar mensaje al canal
