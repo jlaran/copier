@@ -413,11 +413,13 @@ def format_signal_for_telegram(order_data):
     elif vendor == "Enfoque BTC":
         lines = ["📢 Nueva Señal de Enfoque BTC\n"]
 
+    if vendor == "pipsltp":
+        symbol = latest_signal_mrpip['symbol']
+        direction = latest_signal_mrpip['side']
+
     if direction and symbol:
         lines.append(f"📈 {direction} - `{symbol}`\n")
-    elif vendor == "pipsltp":
-        lines.append(f"📈 {latest_signal_mrpip['symbol']} - `{latest_signal_mrpip['side']}`\n")
-
+    
     # lines.append(f"🎯 Entry: `{entry}`")
 
     if isinstance(tps, list) and len(tps) > 0:
