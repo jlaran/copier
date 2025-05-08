@@ -469,7 +469,9 @@ async def handler(event):
                 "sl": signal_data['sl'],            # "BUY" o "SELL"
                 "vendor": "pipsltp"
             }
-            order_data['signal_id'] = signal_id_mrpip
+
+            if signal_id_mrpip:
+                order_data['signal_id'] = signal_id_mrpip
 
             send_order_to_mt5(order_data)
             await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
