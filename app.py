@@ -25,8 +25,9 @@ signal_id_mrpip = None
 # Canales que vamos a escuchar
 TELEGRAM_CHANNEL_PIPS = int(os.getenv("TELEGRAM_CHANNEL_PIPS"))
 TELEGRAM_CHANNEL_FOREX = int(os.getenv("TELEGRAM_CHANNEL_FOREX"))
+TELEGRAM_CHANNEL_BTC = int(os.getenv("TELEGRAM_CHANNEL_BTC"))
 TELEGRAM_CHANNEL_TARGET = int(os.getenv("TELEGRAM_TARGET_CHANNEL"))
-WATCHED_CHANNELS = [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS, TELEGRAM_CHANNEL_FOREX]
+WATCHED_CHANNELS = [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS, TELEGRAM_CHANNEL_FOREX, TELEGRAM_CHANNEL_BTC]
 
 # Inicializar cliente de Telethon
 client_telegram = TelegramClient('session', api_id, api_hash)
@@ -442,7 +443,7 @@ async def handler(event):
     message = event.message.message
 
     #CHANNEL_CRYPTO
-    if sender_id == TELEGRAM_CHANNEL_PIPS and is_entry_signal_mr_pip(message):
+    if sender_id in [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS] and is_entry_signal_mr_pip(message):
         header = "📡 Señal de Mr Pips Recibida con Punto de Entrada"
 
         print(f"\n🪙 Señal de MR Pip detectada:\n{message}\n{'='*60}")
@@ -462,7 +463,7 @@ async def handler(event):
             print(order_data)
             return
         
-    elif sender_id == TELEGRAM_CHANNEL_PIPS and is_tp_sl_message_mr_pip(message):
+    elif sender_id in [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS] and is_tp_sl_message_mr_pip(message):
         header = "📡 Señal de Mr Pips Recibida con SL y TP"
 
         print(f"\n🪙 Señal MR Pip detectada:\n{message}\n{'='*60}")
@@ -483,7 +484,7 @@ async def handler(event):
             print(signal_data)
             return
 
-    elif sender_id == TELEGRAM_CHANNEL_FOREX and is_forex_premium_signal(message):
+    elif sender_id in [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_FOREX] and is_forex_premium_signal(message):
         header = "📡 Señal de Premiun Forex Recibida con SL y TP"
 
         print(f"\n🪙 Señal Premiun Forex detectada:\n{message}\n{'='*60}")
@@ -502,7 +503,7 @@ async def handler(event):
             print(signal_data)
             return
         
-    elif sender_id == TELEGRAM_CHANNEL_TARGET and is_enfoque_signal(message):
+    elif sender_id in [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_BTC] and is_enfoque_signal(message):
         header = "📡 Señal de Enfoque BTC Recibida con SL y TP"
 
         print(f"\n🪙 Señal Enfoque BTC detectada:\n{message}\n{'='*60}")
