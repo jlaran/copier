@@ -404,9 +404,10 @@ def format_signal_for_telegram(order_data):
     vendor = order_data.get("vendor")
 
     # Armar líneas condicionalmente
-
     if vendor == "pip":
         lines = ["📢 Nueva Señal de Mr Pips\n"]
+    if vendor == "pipsltp":
+        lines = ["📢 TP y SL de Mr Pips\n"]
     elif vendor == "Premiun Forex":
         lines = ["📢 Nueva Señal de Premiun Forex\n"]
     elif vendor == "Enfoque BTC":
