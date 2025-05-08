@@ -436,14 +436,13 @@ async def handler(event):
 
     #CHANNEL_CRYPTO
     if sender_id == TELEGRAM_CHANNEL_TARGET and is_entry_signal_mr_pip(message):
+        global signal_id_mrpip
         header = "📡 Señal de Mr Pips Recibida con Punto de Entrada"
 
         print(f"\n🪙 Señal de MR Pip detectada:\n{message}\n{'='*60}")
 
         signal_data = parse_entry_signal(message)
         if signal_data:
-            global signal_id_mrpip
-
             order_data = {
                 "symbol": signal_data['symbol'],         # Ej: "CRASH 1000 INDEX"
                 "side": signal_data['direction'],         # "BUY" o "SELL"
@@ -458,14 +457,13 @@ async def handler(event):
             return
         
     elif sender_id == TELEGRAM_CHANNEL_TARGET and is_tp_sl_message_mr_pip(message):
+        global signal_id_mrpip
         header = "📡 Señal de Mr Pips Recibida con SL y TP"
 
         print(f"\n🪙 Señal MR Pip detectada:\n{message}\n{'='*60}")
 
         signal_data = parse_tp_sl_message(message)
         if signal_data:
-            global signal_id_mrpip
-
             order_data = {
                 "tps": signal_data['tps'],         # Ej: "CRASH 1000 INDEX"
                 "sl": signal_data['sl'],            # "BUY" o "SELL"
