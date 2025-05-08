@@ -529,6 +529,10 @@ def start_flask():
     print(f"🌐 Flask escuchando en puerto {port}")
     app.run(host="0.0.0.0", port=port)
 
+@app.route("/")
+def index():
+    return {"status": "ok", "message": "API activa desde Render"}
+
 @app.route("/ping")
 def ping():
     return {"status": "ok", "message": "MT5 bot activo"}
