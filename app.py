@@ -202,23 +202,25 @@ def is_forex_premium_signal(text):
 def parse_forex_premium_signal(text):
     """
     Parsea una señal del tipo GOLD SELL NOW 3412 o GUYS GOLD SELL NOW 3412.
-    Solo acepta los símbolos: US30, GOLD, BTC, XAU.
+    Convierte GOLD y XAU a XAUUSD, y BTC a BTCUSD.
+    Acepta solo estos símbolos originales: US30, GOLD, BTC, XAU.
 
-    Extrae:
-        - symbol
-        - direction
-        - entry
-        - sl
-        - tps
+    Retorna:
+        - symbol: string
+        - direction: BUY / SELL
+        - entry: list[float]
+        - sl: float
+        - tps: list[float]
     """
     if not text or not isinstance(text, str):
         return None
 
     text = text.strip().upper()
 
+    # Lista permitida de símbolos originales
     allowed_symbols = {"US30", "GOLD", "BTC", "XAU"}
 
-    # Buscar encabezado flexible
+    # Encabezado flexible
     match = re.search(
         r'(?:\b\w+\b\s+)*([A-Z0-9]+)\s+(BUY|SELL)(?:\s+NOW)?(?:\s+\w+)*\s+([\d\.]+(?:\s*/\s*[\d\.]+)?)',
         text
@@ -226,9 +228,17 @@ def parse_forex_premium_signal(text):
     if not match:
         return None
 
-    symbol = match.group(1).strip()
-    if symbol not in allowed_symbols:
+    raw_symbol = match.group(1).strip()
+    if raw_symbol not in allowed_symbols:
         return None
+
+    # Mapeo de conversión
+    symbol_map = {
+        "GOLD": "XAUUSD",
+        "XAU": "XAUUSD",
+        "BTC": "BTCUSD"
+    }
+    symbol = symbol_map.get(raw_symbol, raw_symbol)
 
     direction = match.group(2).strip()
     entry_raw = match.group(3).strip()
@@ -238,7 +248,7 @@ def parse_forex_premium_signal(text):
     except ValueError:
         return None
 
-    # Buscar SL
+    # SL
     sl_match = re.search(r'\bSL\s*[:=]?\s*([\d\.]+)', text, re.IGNORECASE)
     if not sl_match:
         return None
@@ -247,7 +257,7 @@ def parse_forex_premium_signal(text):
     except ValueError:
         return None
 
-    # Buscar TPs
+    # TPs
     tp_matches = re.findall(r'\bTP\d*\s*[:=]?\s*([\d\.]+)', text, re.IGNORECASE)
     try:
         tps = [float(tp) for tp in tp_matches]
