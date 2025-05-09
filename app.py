@@ -386,11 +386,11 @@ def send_order_to_mt5(order_data):
         latest_signal_mrpip_sltp = order_data
         print(f"📤 Señal con SL y TPs de Mr Pips almacenada")
 
-    elif vendor == "Premiun Forex":
+    elif vendor == "premiun_forex":
         latest_signal_forexpremim = order_data
         print(f"📤 Señal de Forex Premium almacenada: {order_data['symbol']} [{order_data['side']}]")
 
-    elif vendor == "Enfoque BTC":
+    elif vendor == "enfoque_btc":
         latest_signal_btc = order_data
         print(f"📤 Señal de Enfoque BTC almacenada: {order_data['symbol']} [{order_data['side']}]")
 
@@ -416,9 +416,9 @@ def format_signal_for_telegram(order_data):
         lines = ["📢 Nueva Señal de Mr Pips\n"]
     if vendor == "pipsltp":
         lines = ["📢 TP y SL de Mr Pips\n"]
-    elif vendor == "Premiun Forex":
+    elif vendor == "premiun_forex":
         lines = ["📢 Nueva Señal de Premiun Forex\n"]
-    elif vendor == "Enfoque BTC":
+    elif vendor == "enfoque_btc":
         lines = ["📢 Nueva Señal de Enfoque BTC\n"]
 
     if vendor == "pipsltp":
@@ -505,7 +505,7 @@ async def handler(event):
                 "direction": signal_data['direction'],   # "BUY" o "SELL"
                 "sl": signal_data['sl'],
                 "tps": signal_data['tps'],
-                "vendor": "Premiun Forex"
+                "vendor": "premiun_forex"
             }
             send_order_to_mt5(order_data)
             print(signal_data)
@@ -524,7 +524,7 @@ async def handler(event):
                 "direction": signal_data['direction'],   # "BUY" o "SELL"
                 "sl": signal_data['sl'],
                 "tps": signal_data['tps'],
-                "vendor": "Enfoque BTC"
+                "vendor": "enfoque_btc"
             }
             send_order_to_mt5(order_data)
             print(signal_data)
