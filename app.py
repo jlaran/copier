@@ -30,7 +30,7 @@ TELEGRAM_CHANNEL_TARGET = int(os.getenv("TELEGRAM_TARGET_CHANNEL"))
 WATCHED_CHANNELS = [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS, TELEGRAM_CHANNEL_FOREX, TELEGRAM_CHANNEL_BTC]
 
 # Inicializar cliente de Telethon
-client_telegram = TelegramClient('session', api_id, api_hash)
+client_telegram = TelegramClient('server_session', api_id, api_hash)
 telethon_event_loop = None
 
 app = Flask(__name__)
@@ -91,7 +91,7 @@ def parse_entry_signal(text):
             return {
                 'symbol': symbol,
                 'market': market.strip(),
-                'direction': direction
+                'side': direction
             }
 
     return None
@@ -269,7 +269,7 @@ def parse_forex_premium_signal(text):
 
     return {
         'symbol': symbol,
-        'direction': direction,
+        'side': direction,
         'entry': entry_prices,
         'sl': sl,
         'tps': tps
@@ -367,7 +367,7 @@ def parse_enfoque_signal(text):
 
     return {
         'symbol': symbol,
-        'direction': direction,
+        'side': direction,
         'entry': entry,
         'sl': sl,
         'tps': tps
@@ -461,7 +461,7 @@ async def handler(event):
         if signal_data:
             order_data = {
                 "symbol": signal_data['symbol'],         # Ej: "CRASH 1000 INDEX"
-                "side": signal_data['direction'],         # "BUY" o "SELL"
+                "side": signal_data['side'],         # "BUY" o "SELL"
                 "vendor": "pip"
             }
             signal_id_mrpip = str(uuid.uuid4())
@@ -502,7 +502,7 @@ async def handler(event):
         if signal_data:
             order_data = {
                 "symbol": signal_data['symbol'],         # Ej: "CRASH 1000 INDEX"
-                "direction": signal_data['direction'],   # "BUY" o "SELL"
+                "side": signal_data['side'],   # "BUY" o "SELL"
                 "sl": signal_data['sl'],
                 "tps": signal_data['tps'],
                 "vendor": "premiun_forex"
@@ -521,7 +521,7 @@ async def handler(event):
         if signal_data:
             order_data = {
                 "symbol": signal_data['symbol'],         # Ej: "CRASH 1000 INDEX"
-                "direction": signal_data['direction'],   # "BUY" o "SELL"
+                "side": signal_data['side'],   # "BUY" o "SELL"
                 "sl": signal_data['sl'],
                 "tps": signal_data['tps'],
                 "vendor": "enfoque_btc"
