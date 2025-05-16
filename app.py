@@ -144,8 +144,8 @@ def parse_tp_sl_message(text):
     if tp_matches and sl_match:
         try:
             return {
-                'tps': [float(tp) for tp in tp_matches],
-                'sl': float(sl_match.group(1))
+                'tps': [str(tp) for tp in tp_matches],
+                'sl': str(sl_match.group(1))
             }
         except ValueError:
             return None  # Algún número no era válido
@@ -244,7 +244,7 @@ def parse_forex_premium_signal(text):
     entry_raw = match.group(3).strip()
 
     try:
-        entry_prices = [float(p.strip()) for p in entry_raw.split('/') if p.strip()]
+        entry_prices = [str(p.strip()) for p in entry_raw.split('/') if p.strip()]
     except ValueError:
         return None
 
@@ -253,14 +253,14 @@ def parse_forex_premium_signal(text):
     if not sl_match:
         return None
     try:
-        sl = float(sl_match.group(1))
+        sl = str(sl_match.group(1))
     except ValueError:
         return None
 
     # TPs
     tp_matches = re.findall(r'\bTP\d*\s*[:=]?\s*([\d\.]+)', text, re.IGNORECASE)
     try:
-        tps = [float(tp) for tp in tp_matches]
+        tps = [str(tp) for tp in tp_matches]
     except ValueError:
         return None
 
@@ -342,7 +342,7 @@ def parse_enfoque_signal(text):
     if not entry_match:
         return None
     try:
-        entry = float(entry_match.group(1))
+        entry = str(entry_match.group(1))
     except ValueError:
         return None
 
@@ -351,14 +351,14 @@ def parse_enfoque_signal(text):
     if not sl_match:
         return None
     try:
-        sl = float(sl_match.group(1))
+        sl = str(sl_match.group(1))
     except ValueError:
         return None
 
     # TPs
     tp_matches = re.findall(r'TP\d*\s*[:=]?\s*([\d\.]+)', text)
     try:
-        tps = [float(tp) for tp in tp_matches]
+        tps = [str(tp) for tp in tp_matches]
     except ValueError:
         return None
 
