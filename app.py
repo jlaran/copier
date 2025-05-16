@@ -30,7 +30,7 @@ TELEGRAM_CHANNEL_TARGET = int(os.getenv("TELEGRAM_TARGET_CHANNEL"))
 WATCHED_CHANNELS = [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS, TELEGRAM_CHANNEL_FOREX, TELEGRAM_CHANNEL_BTC]
 
 # Inicializar cliente de Telethon
-client_telegram = TelegramClient('server_session', api_id, api_hash)
+client_telegram = TelegramClient('local_session', api_id, api_hash)
 telethon_event_loop = None
 
 app = Flask(__name__)
@@ -144,8 +144,8 @@ def parse_tp_sl_message(text):
     if tp_matches and sl_match:
         try:
             return {
-                'tps': [str(tp) for tp in tp_matches],
-                'sl': str(sl_match.group(1))
+                'tps': [float(tp) for tp in tp_matches],
+                'sl': float(sl_match.group(1))
             }
         except ValueError:
             return None  # Algún número no era válido
@@ -244,7 +244,7 @@ def parse_forex_premium_signal(text):
     entry_raw = match.group(3).strip()
 
     try:
-        entry_prices = [str(p.strip()) for p in entry_raw.split('/') if p.strip()]
+        entry_prices = [float(p.strip()) for p in entry_raw.split('/') if p.strip()]
     except ValueError:
         return None
 
@@ -253,14 +253,14 @@ def parse_forex_premium_signal(text):
     if not sl_match:
         return None
     try:
-        sl = str(sl_match.group(1))
+        sl = float(sl_match.group(1))
     except ValueError:
         return None
 
     # TPs
     tp_matches = re.findall(r'\bTP\d*\s*[:=]?\s*([\d\.]+)', text, re.IGNORECASE)
     try:
-        tps = [str(tp) for tp in tp_matches]
+        tps = [float(tp) for tp in tp_matches]
     except ValueError:
         return None
 
@@ -342,7 +342,7 @@ def parse_enfoque_signal(text):
     if not entry_match:
         return None
     try:
-        entry = str(entry_match.group(1))
+        entry = float(entry_match.group(1))
     except ValueError:
         return None
 
@@ -351,14 +351,14 @@ def parse_enfoque_signal(text):
     if not sl_match:
         return None
     try:
-        sl = str(sl_match.group(1))
+        sl = float(sl_match.group(1))
     except ValueError:
         return None
 
     # TPs
     tp_matches = re.findall(r'TP\d*\s*[:=]?\s*([\d\.]+)', text)
     try:
-        tps = [str(tp) for tp in tp_matches]
+        tps = [float(tp) for tp in tp_matches]
     except ValueError:
         return None
 
