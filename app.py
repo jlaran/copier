@@ -30,7 +30,7 @@ TELEGRAM_CHANNEL_TARGET = int(os.getenv("TELEGRAM_TARGET_CHANNEL"))
 WATCHED_CHANNELS = [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS, TELEGRAM_CHANNEL_FOREX, TELEGRAM_CHANNEL_BTC]
 
 # Inicializar cliente de Telethon
-client_telegram = TelegramClient('local_session', api_id, api_hash)
+client_telegram = TelegramClient('server_session', api_id, api_hash)
 telethon_event_loop = None
 
 app = Flask(__name__)
