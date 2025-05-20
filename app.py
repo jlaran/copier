@@ -533,13 +533,13 @@ async def handler(event):
         
     else:
         if sender_id  == TELEGRAM_CHANNEL_PIPS:
-            header = "⚠️ Se recibió un mensaje de Mr Pips, pero no es una señal\n\n{message}"
+            header = "⚠️ Se recibió un mensaje de Mr Pips, pero no es una señal"
         elif sender_id == TELEGRAM_CHANNEL_FOREX:
-            header = "⚠️ Se recibió un mensaje de VIP Premium Forex, pero no es una señal\n\n{message}"
+            header = "⚠️ Se recibió un mensaje de VIP Premium Forex, pero no es una señal"
         elif sender_id == TELEGRAM_CHANNEL_BTC:
-            header = "⚠️ Se recibió un mensaje El Enfoque, pero no es una señal\n\n{message}"
+            header = "⚠️ Se recibió un mensaje El Enfoque, pero no es una señal"
         elif sender_id  == TELEGRAM_CHANNEL_TARGET:
-            header = "⚠️ Se recibió un mensaje del grupo The Billions, pero no es una señal\n\n{message}"
+            header = "⚠️ Se recibió un mensaje del grupo The Billions, pero no es una señal"
         else:
             header = "⚠️ Se recibió un mensaje, pero no es de otro canal"
         
@@ -548,7 +548,7 @@ async def handler(event):
     # Enviar mensaje al canal
     try:
         # await client_telegram.send_message(entity=target_channel, message=f"{header}\n\n{message}")
-        await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{header}")
+        await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{header}\n\n{message}")
         print("✅ Mensaje enviado al canal destino.")
     except Exception as e:
         print(f"❌ Error al enviar mensaje al canal: {e}")
