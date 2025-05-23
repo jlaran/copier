@@ -595,6 +595,9 @@ async def handler(event):
                 "tps": signal_data['tps'],
                 "vendor": "premiun_forex"
             }
+            signal_id_forex = str(uuid.uuid4())
+            order_data['signal_id'] = signal_id_forex
+
             send_order_to_mt5(order_data)
             print(signal_data)
             await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
@@ -614,6 +617,9 @@ async def handler(event):
                 "tps": signal_data['tps'],
                 "vendor": "enfoque_btc"
             }
+            signal_id_btc = str(uuid.uuid4())
+            order_data['signal_id'] = signal_id_btc
+            
             send_order_to_mt5(order_data)
             print(signal_data)
             await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
@@ -633,6 +639,9 @@ async def handler(event):
                 "tps": signal_data['tps'],
                 "vendor": "joao"
             }
+            signal_id_joao = str(uuid.uuid4())
+            order_data['signal_id'] = signal_id_joao
+
             send_order_to_mt5(order_data)
             print(signal_data)
             await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
