@@ -14,20 +14,22 @@ load_dotenv()
 # === Configuración ===
 api_id = int(os.getenv("TELEGRAM_API"))
 api_hash = os.getenv("TELEGRAM_API_HASH")
-# target_channel = int(os.getenv("TELEGRAM_TARGET_CHANNEL"))  # Puede ser @micanal o ID tipo -100...
 
 latest_signal_mrpip = None
 latest_signal_forexpremim = None
 latest_signal_btc = None
 latest_signal_mrpip_sltp = None
 signal_id_mrpip = None
+latest_signal_joao = None
 
 # Canales que vamos a escuchar
 TELEGRAM_CHANNEL_PIPS = int(os.getenv("TELEGRAM_CHANNEL_PIPS"))
 TELEGRAM_CHANNEL_FOREX = int(os.getenv("TELEGRAM_CHANNEL_FOREX"))
 TELEGRAM_CHANNEL_BTC = int(os.getenv("TELEGRAM_CHANNEL_BTC"))
+TELEGRAM_CHANNEL_JOAO = int(os.getenv("TELEGRAM_CHANNEL_JOAO"))
 TELEGRAM_CHANNEL_TARGET = int(os.getenv("TELEGRAM_TARGET_CHANNEL"))
-WATCHED_CHANNELS = [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS, TELEGRAM_CHANNEL_FOREX, TELEGRAM_CHANNEL_BTC]
+
+WATCHED_CHANNELS = [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS, TELEGRAM_CHANNEL_FOREX, TELEGRAM_CHANNEL_BTC, TELEGRAM_CHANNEL_JOAO]
 
 # Inicializar cliente de Telethon
 client_telegram = TelegramClient('server_session', api_id, api_hash)
@@ -373,8 +375,65 @@ def parse_enfoque_signal(text):
         'tps': tps
     }
 
+# JOAO VIP SIGNAL
+
+def is_joao_signal(text):
+    """
+    Valida si un mensaje tiene el formato de señal de Joao Free Signals.
+    """
+    if not text or not isinstance(text, str):
+        return False
+
+    # Ignorar capitalización
+    text = text.strip()
+
+    pair_match = re.search(r'pair:\s*#?([A-Z]{6,7})', text, re.IGNORECASE)
+    direction_match = re.search(r'direction:\s*(buy|sell)', text, re.IGNORECASE)
+    entry_match = re.search(r'entry price:\s*([\d\.]+)', text, re.IGNORECASE)
+    sl_match = re.search(r'stop loss:\s*([\d\.]+)', text, re.IGNORECASE)
+    tp_matches = re.findall(r'tp\d+:\s*([\d\.]+)', text, re.IGNORECASE)
+
+    return all([
+        pair_match,
+        direction_match,
+        entry_match,
+        sl_match,
+        len(tp_matches) >= 1
+    ])
+
+def parse_joao_signal(text):
+    """
+    Parsea una señal del canal JOAO FREE SIGNALS.
+    Devuelve un diccionario con los campos clave si es válida, o None.
+    """
+    if not is_joao_signal(text):
+        return None
+
+    text = text.strip()
+
+    try:
+        symbol = re.search(r'pair:\s*#?([A-Z]{6,7})', text, re.IGNORECASE).group(1).strip().upper()
+        side = re.search(r'direction:\s*(buy|sell)', text, re.IGNORECASE).group(1).strip().upper()
+        entry = re.search(r'entry price:\s*([\d\.]+)', text, re.IGNORECASE).group(1).strip()
+        sl = re.search(r'stop loss:\s*([\d\.]+)', text, re.IGNORECASE).group(1).strip()
+        tps = re.findall(r'tp\d+:\s*([\d\.]+)', text, re.IGNORECASE)
+    except Exception as e:
+        print("❌ Error al parsear señal de Joao:", e)
+        return None
+
+    return {
+        "symbol": symbol,
+        "side": side,
+        "entry": entry,
+        "sl": sl,
+        "tps": tps,
+        "vendor": "joao_signal"
+    }
+
+# READY PARSED SIGNALS
+
 def send_order_to_mt5(order_data):
-    global latest_signal_mrpip, latest_signal_mrpip_sltp, latest_signal_forexpremim, latest_signal_btc
+    global latest_signal_mrpip, latest_signal_mrpip_sltp, latest_signal_forexpremim, latest_signal_btc, latest_signal_joao
 
     vendor = order_data.get("vendor", "").lower()
 
@@ -393,6 +452,10 @@ def send_order_to_mt5(order_data):
     elif vendor == "enfoque_btc":
         latest_signal_btc = order_data
         print(f"📤 Señal de Enfoque BTC almacenada: {order_data['symbol']} [{order_data['side']}]")
+
+    elif vendor == "joao":
+        latest_signal_joao = order_data
+        print(f"📤 Señal de Joao almacenada: {order_data['symbol']} [{order_data['side']}]")
 
     else:
         print("❌ Vendor desconocido en la señal:", vendor)
@@ -420,6 +483,8 @@ def format_signal_for_telegram(order_data):
         lines = ["📢 Nueva Señal de Premiun Forex\n"]
     elif vendor == "enfoque_btc":
         lines = ["📢 Nueva Señal de Enfoque BTC\n"]
+    elif vendor == "joao":
+        lines = ["📢 Nueva Señal de Joao\n"]
 
     if vendor == "pipsltp":
         symbol = latest_signal_mrpip['symbol']
@@ -438,7 +503,6 @@ def format_signal_for_telegram(order_data):
         lines.append(f"🛑 SL: `{sl}`")
 
     return "\n".join(lines)
-
 
 # === Handler principal ===
 
@@ -530,7 +594,25 @@ async def handler(event):
             print(signal_data)
             await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
             return
-        
+          
+    elif sender_id in [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_JOAO] and is_joao_signal(message):
+        header = "📡 Señal de Joao Recibida con SL y TP"
+
+        print(f"\n🪙 Señal Joao detectada:\n{message}\n{'='*60}")
+
+        signal_data = parse_joao_signal(message)
+        if signal_data:
+            order_data = {
+                "symbol": signal_data['symbol'],         # Ej: "CRASH 1000 INDEX"
+                "side": signal_data['side'],   # "BUY" o "SELL"
+                "sl": signal_data['sl'],
+                "tps": signal_data['tps'],
+                "vendor": "joao"
+            }
+            send_order_to_mt5(order_data)
+            print(signal_data)
+            await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
+            return
     else:
         if sender_id  == TELEGRAM_CHANNEL_PIPS:
             header = "⚠️ Se recibió un mensaje de Mr Pips, pero no es una señal"
@@ -538,6 +620,8 @@ async def handler(event):
             header = "⚠️ Se recibió un mensaje de VIP Premium Forex, pero no es una señal"
         elif sender_id == TELEGRAM_CHANNEL_BTC:
             header = "⚠️ Se recibió un mensaje El Enfoque, pero no es una señal"
+        elif sender_id  == TELEGRAM_CHANNEL_JOAO:
+            header = "⚠️ Se recibió un mensaje del grupo Joao, pero no es una señal"
         elif sender_id  == TELEGRAM_CHANNEL_TARGET:
             header = "⚠️ Se recibió un mensaje del grupo The Billions, pero no es una señal"
         else:
@@ -600,6 +684,15 @@ def get_forexpremium_signal():
         return "", 204
     signal = latest_signal_forexpremim
     latest_signal_forexpremim = None
+    return jsonify(signal)
+
+@app.route("/mt5/joao/execute", methods=["GET"])
+def get_joao_signal():
+    global latest_signal_joao
+    if not latest_signal_joao:
+        return "", 204
+    signal = latest_signal_joao
+    latest_signal_joao = None
     return jsonify(signal)
 
 @app.route("/mt5/btc/execute", methods=["GET"])
