@@ -29,6 +29,8 @@ TELEGRAM_CHANNEL_BTC = int(os.getenv("TELEGRAM_CHANNEL_BTC"))
 TELEGRAM_CHANNEL_JOAO = int(os.getenv("TELEGRAM_CHANNEL_JOAO"))
 TELEGRAM_CHANNEL_TARGET = int(os.getenv("TELEGRAM_TARGET_CHANNEL"))
 
+TIME_TO_EXPIRE_SIGNAL = int(os.getenv("TIME_TO_EXPIRE_SIGNAL"))
+
 WATCHED_CHANNELS = [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_PIPS, TELEGRAM_CHANNEL_FOREX, TELEGRAM_CHANNEL_BTC, TELEGRAM_CHANNEL_JOAO]
 
 # Inicializar cliente de Telethon
@@ -438,23 +440,43 @@ def send_order_to_mt5(order_data):
     vendor = order_data.get("vendor", "").lower()
 
     if vendor == "pip":
-        latest_signal_mrpip = order_data
+        latest_signal_mrpip = {
+            "data": order_data,
+            "timestamp": datetime.utcnow(),
+            "ttl": timedelta(seconds=TIME_TO_EXPIRE_SIGNAL)
+        }
         print(f"📤 Señal de Mr Pips almacenada: {order_data['symbol']} [{order_data['side']}]")
     
     if vendor == "pipsltp":
-        latest_signal_mrpip_sltp = order_data
+        latest_signal_mrpip_sltp = {
+            "data": order_data,
+            "timestamp": datetime.utcnow(),
+            "ttl": timedelta(seconds=TIME_TO_EXPIRE_SIGNAL)
+        }
         print(f"📤 Señal con SL y TPs de Mr Pips almacenada")
 
     elif vendor == "premiun_forex":
-        latest_signal_forexpremim = order_data
+        latest_signal_forexpremim = {
+            "data": order_data,
+            "timestamp": datetime.utcnow(),
+            "ttl": timedelta(seconds=TIME_TO_EXPIRE_SIGNAL)
+        }
         print(f"📤 Señal de Forex Premium almacenada: {order_data['symbol']} [{order_data['side']}]")
 
     elif vendor == "enfoque_btc":
-        latest_signal_btc = order_data
+        latest_signal_btc = {
+            "data": order_data,
+            "timestamp": datetime.utcnow(),
+            "ttl": timedelta(seconds=TIME_TO_EXPIRE_SIGNAL)
+        }
         print(f"📤 Señal de Enfoque BTC almacenada: {order_data['symbol']} [{order_data['side']}]")
 
     elif vendor == "joao":
-        latest_signal_joao = order_data
+        latest_signal_joao = {
+            "data": order_data,
+            "timestamp": datetime.utcnow(),
+            "ttl": timedelta(seconds=TIME_TO_EXPIRE_SIGNAL)
+        }
         print(f"📤 Señal de Joao almacenada: {order_data['symbol']} [{order_data['side']}]")
 
     else:
@@ -462,6 +484,7 @@ def send_order_to_mt5(order_data):
 
 def format_signal_for_telegram(order_data):
     global latest_signal_mrpip
+    
     """
     Formatea una señal de trading para enviar como mensaje de Telegram (Markdown),
     soportando distintos formatos de `order_data`.
@@ -487,8 +510,9 @@ def format_signal_for_telegram(order_data):
         lines = ["📢 Nueva Señal de Joao\n"]
 
     if vendor == "pipsltp":
-        symbol = latest_signal_mrpip['symbol']
-        direction = latest_signal_mrpip['side']
+        pipOrderData = latest_signal_mrpip["data"]
+        symbol = pipOrderData['symbol']
+        direction = pipOrderData['side']
 
     if direction and symbol:
         lines.append(f"📈 {direction} - `{symbol}`\n")
@@ -664,45 +688,80 @@ def get_mrpip_signal():
     global latest_signal_mrpip
     if not latest_signal_mrpip:
         return "", 204
-    signal = latest_signal_mrpip
-    latest_signal_mrpip = None
-    return jsonify(signal)
+    
+    now = datetime.utcnow()
+    created = latest_signal_mrpip["timestamp"]
+    ttl = latest_signal_mrpip["ttl"]
+
+    if now - created > ttl:
+        latest_signal_mrpip = None
+        return "", 204
+
+    return jsonify(latest_signal_mrpip["data"])
 
 @app.route("/mt5/mrpip/sltp", methods=["GET"])
 def get_mrpip_sltp_signal():
     global latest_signal_mrpip_sltp
     if not latest_signal_mrpip_sltp:
         return "", 204
-    signal = latest_signal_mrpip_sltp
-    latest_signal_mrpip_sltp = None
-    return jsonify(signal)
+    
+    now = datetime.utcnow()
+    created = latest_signal_mrpip_sltp["timestamp"]
+    ttl = latest_signal_mrpip_sltp["ttl"]
+
+    if now - created > ttl:
+        latest_signal_mrpip_sltp = None
+        return "", 204
+
+    return jsonify(latest_signal_mrpip_sltp["data"])
 
 @app.route("/mt5/forexpremium/execute", methods=["GET"])
 def get_forexpremium_signal():
     global latest_signal_forexpremim
     if not latest_signal_forexpremim:
         return "", 204
-    signal = latest_signal_forexpremim
-    latest_signal_forexpremim = None
-    return jsonify(signal)
+    
+    now = datetime.utcnow()
+    created = latest_signal_forexpremim["timestamp"]
+    ttl = latest_signal_forexpremim["ttl"]
+
+    if now - created > ttl:
+        latest_signal_forexpremim = None
+        return "", 204
+
+    return jsonify(latest_signal_forexpremim["data"])
 
 @app.route("/mt5/joao/execute", methods=["GET"])
 def get_joao_signal():
     global latest_signal_joao
     if not latest_signal_joao:
         return "", 204
-    signal = latest_signal_joao
-    latest_signal_joao = None
-    return jsonify(signal)
+    
+    now = datetime.utcnow()
+    created = latest_signal_joao["timestamp"]
+    ttl = latest_signal_joao["ttl"]
+
+    if now - created > ttl:
+        latest_signal_joao = None
+        return "", 204
+
+    return jsonify(latest_signal_joao["data"])
 
 @app.route("/mt5/btc/execute", methods=["GET"])
 def get_btc_signal():
     global latest_signal_btc
     if not latest_signal_btc:
         return "", 204
-    signal = latest_signal_btc
-    latest_signal_btc = None
-    return jsonify(signal)
+    
+    now = datetime.utcnow()
+    created = latest_signal_btc["timestamp"]
+    ttl = latest_signal_btc["ttl"]
+
+    if now - created > ttl:
+        latest_signal_btc = None
+        return "", 204
+
+    return jsonify(latest_signal_btc["data"])
 
 if __name__ == "__main__":
     main()
