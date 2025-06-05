@@ -506,7 +506,6 @@ def format_signal_for_telegram(order_data):
         lines = ["📢 Nueva Señal de Premiun Forex\n"]
     elif vendor == "enfoque_btc":
         lines = ["📢 Nueva Señal de Enfoque BTC\n"]
-        lines2 = ["🔥 JanhTraders Signals 🔥\n\n🔔 BTCUSDm 🔔"]
     elif vendor == "joao":
         lines = ["📢 Nueva Señal de Joao\n"]
 
@@ -517,66 +516,17 @@ def format_signal_for_telegram(order_data):
 
     if direction and symbol:
         lines.append(f"📈 {direction} - `{symbol}`\n")
-        lines2.append(f"📈 {direction}: `{entry}`\n")
     
-    # lines.append(f"🎯 Entry: `{entry}`")
+    lines.append(f"🎯 Entry: `{entry}`\n")
 
     if isinstance(tps, list) and len(tps) > 0:
         for i, tp in enumerate(tps):
             lines.append(f"🎯 TP{i+1}: `{tp}`")
-            lines2.append(f"TP{i+1}: `{tp}`")
-
-    if sl:
-        lines.append(f"🛑 SL: `{sl}`")
-        lines2.append(f"🛑 SL: `{sl}`")
-
-    return "\n".join(lines)
-
-def format_signal_for_jorge_telegram(order_data):
-    global latest_signal_mrpip
-    
-    """
-    Formatea una señal de trading para enviar como mensaje de Telegram (Markdown),
-    soportando distintos formatos de `order_data`.
-    """
-    # Extraer campos con respaldo alternativo
-    symbol = order_data.get("symbol", "🆔 ACTIVO NO DEFINIDO")
-    direction = order_data.get("direction") or order_data.get("side") or "🧐"
-    sl = order_data.get("sl")
-    tps = order_data.get("tps")
-    entry = order_data.get("entry", "⏳ Esperando ejecución")
-    vendor = order_data.get("vendor")
-
-    # Armar líneas condicionalmente
-    # if vendor == "pip":
-    #     lines = ["📢 Nueva Señal de Mr Pips\n"]
-    # if vendor == "pipsltp":
-    #     lines = ["📢 TP y SL de Mr Pips\n"]
-    # elif vendor == "premiun_forex":
-    #     lines = ["📢 Nueva Señal de Premiun Forex\n"]
-    if vendor == "enfoque_btc":
-        lines = ["🔥 JanhTraders Signals 🔥\n"]
-    # elif vendor == "joao":
-    #     lines = ["📢 Nueva Señal de Joao\n"]
-
-    # if vendor == "pipsltp":
-    #     pipOrderData = latest_signal_mrpip["data"]
-    #     symbol = pipOrderData['symbol']
-    #     direction = pipOrderData['side']
-
-    if direction and symbol:
-        lines.append(f"📈 🔔 {symbol} 🔔\n")
-        lines.append(f"📈 {direction}: `{entry}`\n")
-    
-    if isinstance(tps, list) and len(tps) > 0:
-        for i, tp in enumerate(tps):
-            lines.append(f"TP{i+1}: `{tp}`")
 
     if sl:
         lines.append(f"🛑 SL: `{sl}`")
 
     return "\n".join(lines)
-
 
 # === Handler principal ===
 
@@ -662,6 +612,7 @@ async def handler(event):
         if signal_data:
             order_data = {
                 "symbol": signal_data['symbol'],         # Ej: "CRASH 1000 INDEX"
+                "entry": signal_data['entry'],
                 "side": signal_data['side'],   # "BUY" o "SELL"
                 "sl": signal_data['sl'],
                 "tps": signal_data['tps'],
@@ -673,7 +624,7 @@ async def handler(event):
             send_order_to_mt5(order_data)
             print(signal_data)
             await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_telegram(order_data)}")
-            await client_telegram.send_message(entity=TELEGRAM_CHANNEL_TARGET, message=f"{format_signal_for_jorge_telegram(order_data)}")
+            
             return
           
     elif sender_id in [TELEGRAM_CHANNEL_TARGET, TELEGRAM_CHANNEL_JOAO] and is_joao_signal(message):
