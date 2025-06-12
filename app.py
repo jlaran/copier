@@ -205,9 +205,9 @@ def is_forex_premium_signal(text):
 
 def parse_forex_premium_signal(text):
     """
-    Parsea una señal del tipo GOLD SELL NOW 3412 o GUYS GOLD SELL NOW 3412.
+    Parsea una señal tipo: GOLD SELL NOW 3412 o NAS100 BUY 17800.
     Convierte GOLD y XAU a XAUUSD, y BTC a BTCUSD.
-    Acepta solo estos símbolos originales: US30, GOLD, BTC, XAU.
+    Acepta cualquier símbolo alfanumérico, sin lista fija.
 
     Retorna:
         - symbol: string
@@ -221,22 +221,17 @@ def parse_forex_premium_signal(text):
 
     text = text.strip().upper()
 
-    # Lista permitida de símbolos originales
-    allowed_symbols = {"US30", "GOLD", "BTC", "XAU"}
-
-    # Encabezado flexible
+    # Encabezado flexible: extrae símbolo, dirección y entrada
     match = re.search(
-        r'(?:\b\w+\b\s+)*([A-Z0-9]+)\s+(BUY|SELL)(?:\s+NOW)?(?:\s+\w+)*\s+([\d\.]+(?:\s*/\s*[\d\.]+)?)',
+        r'(?:\b\w+\b\s+)*([A-Z]{2,10}[0-9]{0,5})\s+(BUY|SELL)(?:\s+NOW)?(?:\s+\w+)*\s+([\d\.]+(?:\s*/\s*[\d\.]+)?)',
         text
     )
     if not match:
         return None
 
     raw_symbol = match.group(1).strip()
-    if raw_symbol not in allowed_symbols:
-        return None
 
-    # Mapeo de conversión
+    # Mapeo de símbolos estándar
     symbol_map = {
         "GOLD": "XAUUSD",
         "XAU": "XAUUSD",
@@ -246,30 +241,19 @@ def parse_forex_premium_signal(text):
 
     direction = match.group(2).strip()
     entry_raw = match.group(3).strip()
-
-    try:
-        entry_prices = [str(p.strip()) for p in entry_raw.split('/') if p.strip()]
-    except ValueError:
-        return None
+    entry_prices = [p.strip() for p in entry_raw.split('/') if p.strip()]
 
     # SL
     sl_match = re.search(r'\bSL\s*[:=]?\s*([\d\.]+)', text, re.IGNORECASE)
     if not sl_match:
         return None
-    try:
-        sl = str(sl_match.group(1))
-    except ValueError:
-        return None
+    sl = sl_match.group(1)
 
     # TPs
     tp_matches = re.findall(r'\bTP\d*\s*[:=]?\s*([\d\.]+)', text, re.IGNORECASE)
-    try:
-        tps = [str(tp) for tp in tp_matches]
-    except ValueError:
+    if not tp_matches:
         return None
-
-    if not tps:
-        return None
+    tps = [tp.strip() for tp in tp_matches]
 
     return {
         'symbol': symbol,
