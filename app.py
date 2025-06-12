@@ -188,9 +188,9 @@ def is_forex_premium_signal(text):
     if not match:
         return False
 
-    symbol = match.group(1).strip()
-    if symbol not in allowed_symbols:
-        return False
+    # symbol = match.group(1).strip()
+    # if symbol not in allowed_symbols:
+        # return False
 
     # Validar SL
     has_sl = re.search(r'\bSL\s*[:=]?\s*([\d\.]+)', text, re.IGNORECASE)
