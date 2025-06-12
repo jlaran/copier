@@ -235,7 +235,8 @@ def parse_forex_premium_signal(text):
     symbol_map = {
         "GOLD": "XAUUSD",
         "XAU": "XAUUSD",
-        "BTC": "BTCUSD"
+        "BTC": "BTCUSD",
+        "NAS100" : "USTEC"
     }
     symbol = symbol_map.get(raw_symbol, raw_symbol)
 
